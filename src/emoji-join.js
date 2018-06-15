@@ -38,14 +38,13 @@ class EmojiJoin{
             if (!ret[objectCode]) ret[objectCode] = v;
         }
 
-        const _ret = [];
+        let t = ret;
 
-        for (let k in ret){
-            const v = ret[k];
-            _ret.push(v);
+        ret = [];
+
+        for (let k in t){
+            ret.push(t[k]);
         }
-
-        ret = _ret;
 
         return ret;
     }
@@ -54,7 +53,7 @@ class EmojiJoin{
      *
      * 이모지 객체 집합을 반환한다.
      *
-     * @param objectType
+     * @param objectCode
      * @returns {Array}
      */
     static getObjects(objectCode = ''){
@@ -64,6 +63,7 @@ class EmojiJoin{
         for (let k in emojiData){
 
             const v = emojiData[k];
+
             const _objectCode = v.objectCode;
 
             if (objectCode === _objectCode){
@@ -73,12 +73,13 @@ class EmojiJoin{
 
         return ret;
     }
+
     /**
      *
      * 이모지 객체를 반환한다.
      *
-     * @param objectType
-     * @param skinCodePoint
+     * @param objectCode
+     * @param skinCode
      * @returns {{}}
      */
     static getObject(objectCode = '', skinCode = ''){
@@ -88,12 +89,14 @@ class EmojiJoin{
         for (let k in emojiData){
 
             const v = emojiData[k];
+
             const _objectCode = v.objectCode;
             const codePoints = v.codePoints;
 
             if (objectCode === _objectCode &&
             codePoints.indexOf(skinCode) > -1){
                 ret = v;
+                break;
             }
         }
 
