@@ -1,2 +1,2 @@
-# [emoji-join](https://github.com/mohwa/emoji-join)
+# [emoji-joiner](https://github.com/mohwa/emoji-joiner)
 
