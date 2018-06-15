@@ -13,122 +13,243 @@ unicodeVersion = Number(unicodeVersion).toFixed(1);
 
 const host = 'https://unicode.org';
 const uriPath = `Public/emoji/${unicodeVersion}`;
+
+// 이모지 시퀀스 데이터
+const seqFileName = 'emoji-sequences.txt';
+// 이모지 ZWJ 시퀀스 데이터
 const zwjFileName = 'emoji-zwj-sequences.txt';
 
-// 유니코드 파일 url
-const url = `${host}/${uriPath}/${zwjFileName}`;
+// 생성될 데이터 파일명
+const destFileName = 'emoji-data.json';
 
-// 남자
-const manCodePoint = '1F468';
-// 여자
-const womanCodePoint = '1F469';
-// https://codepoints.net/U+FE0F
-const selector16CodePoint = 'FE0F';
+// 성별로 분리된 코드 집합
+const sexSignCodes = {
+    "1F476": "baby",
+    "1F47C": "baby angel",
+    "1F466": "boy",
+    "1F467": "girl",
+    "1F474": "old man",
+    "1F475": "old woman",
+    "1F934": "prince",
+    "1F478": "princess",
+    "1F57A": "man dancing",
+    "1F483": "woman dancing"
+};
 
-const emojiData = {data: {}, types: {}};
+// 스킨 코드 집합
+const skinCodes = ['1F3FB', '1F3FC', '1F3FD', '1F3FE', '1F3FF'];
 
-const tmpFilePath = path.join(__dirname, zwjFileName);
-const destFilePath = path.join(__dirname, `../src/${zwjFileName.replace('.txt', '.json')}`);
+// 성별을 나타내는 코드 집합
+const sexCodes = ['2640', '2642', '1F468', '1F469'];
 
-// 기존 데이터를 삭제한다.
+const selector16Code = 'FE0F';
+
+// 시퀀스 파일 집합
+const fileNames = [seqFileName, zwjFileName];
+
+// 생성할 데이터 집합
+const emojiData = {};
+
+// 목적지 파일 경로
+const destFilePath = path.join(__dirname, `../src/${destFileName}`);
+
+// 기존 데이터 파일을 삭제한다.
 fse.removeSync(destFilePath);
 
-request.get(url).pipe(fse.createWriteStream(tmpFilePath).on('finish', () => {
+fileNames.forEach((v, idx) => {
 
-    // 빈줄은 skip 한다.
-    const lr = new LineByLineReader(tmpFilePath, {"skipEmptyLines": true});
+    const tmpFilePath = path.join(__dirname, v);
 
-    lr.on('line', line => {
+    // 유니코드 데이터 파일을 가져올 URL
+    const url = `${host}/${uriPath}/${v}`;
 
-        if (line[0] === '#') return;
+    request.get(url).pipe(fse.createWriteStream(tmpFilePath).on('finish', () => {
 
-        const data = line.split(';');
+        // 빈줄은 skip 한다.
+        const lr = new LineByLineReader(tmpFilePath, {"skipEmptyLines": true});
 
-        // 코드 포인트 집합
-        const codePoint = data[0].trim();
-        const codePoints = codePoint.split(/\s/);
+        lr.on('line', line => {
 
-        // 객체 타입(외형, 직업 등)
-        let objectType = codePoints[0];
-        // 키 이름
-        let objectTypeKey = '';
+            if (line[0] === '#') return;
 
-        // "성별" 코드 포인트가 `1F468(남자)`, `1F469(여자)`일 경우(이전 코드 포인트를 사용할 경우)
-        if (objectType === manCodePoint || objectType === womanCodePoint){
+            const data = line.split(';');
 
-            objectType = codePoints[(codePoints.length - 1)];
+            // 객체 코드 집합
+            const codePoint = data[0].trim();
+            const codePoints = codePoint.split(/\s/);
+            //
+            //// 객체 코드
+            let objectCode = codePoints[0];
 
-            if (objectType === selector16CodePoint){
-                objectType = codePoints[(codePoints.length - 2)];
+            // 코드 포인트가 `1F468`(남자), `1F469`(여자)일 경우(성별 코드가 sign으로 나눠지기전 데이터)
+            if (objectCode === '1F468' || objectCode === '1F469'){
+
+                objectCode = codePoints[(codePoints.length - 1)];
+
+                if (objectCode === selector16Code){
+                    objectCode = codePoints[(codePoints.length - 2)];
+                }
             }
-        }
 
-        const seqType = data[1].trim();
-        const infos = data[2].split('#');
+            const objectCodeNameAndSkin = data[2].split('#').split(':');
 
-        const objectTypeNameAndSkin = infos[0].split(':');
-        const versionAndContent = infos[1].split(/\[\d\]/);
+            // 객체 코드
+            let objectFullName = objectCodeNameAndSkin[0];
+            let objectCodeName = getObjectCodeName(objectFullName);
 
-        // 객체 타입 이름
-        let objectTypeName = objectTypeNameAndSkin[0];
-        objectTypeName = objectTypeName.trim();
-
-        // skin
-        let skin = objectTypeNameAndSkin[1] || '';
-        skin = skin.indexOf('skin') > -1 ? skin.trim() : '';
-
-        const version = versionAndContent[0].trim();
-        let content = versionAndContent[1].trim();
-        content = content.replace(/(^\(|\)$)/g, '');
-
-        if (
-        objectTypeName.indexOf('couple') > -1 ||
-        objectTypeName === 'kiss' ||
-        objectTypeName === 'family'
-        ){
-            objectType = objectTypeName;
-            objectTypeKey = `${objectType}`;
-        }
-        else{
-
-            let sex = objectTypeName.indexOf('woman') > -1 ? 'woman' : 'man';
-            objectTypeName = objectTypeName.replace(/(,|man|woman)/g, '').trim();
-
-            objectTypeKey = `${objectType}_${sex}`;
-        }
+            // 스킨
+            let skinCode = getSkinCode(codePoints);
+            let skinCodeName = objectCodeNameAndSkin[1] || '';
+            skinCodeName = skinCodeName.trim();
 
 
-        emojiData.types[objectType] = {
-            objectType: objectType,
-            name: objectTypeName
-        };
+            const entities = getEntities(codePoints);
 
-        emojiData.data[objectTypeKey] = emojiData.data[objectTypeKey] || [];
+            // emoji-sequences.txt 파일일 경우
+            if (v === seqFileName){
 
-        emojiData.data[objectTypeKey].push({
-            "codePoints": codePoints,
-            "seqType": seqType,
-            "objectTypeName": objectTypeName,
-            "skin": skin,
-            "version": version,
-            "content": content
+                if (sexSignCodes[objectCode]){
+
+                    emojiData[codePoint] = {
+                        codePoints,
+                        objectCode,
+                        objectCodeName,
+                        objectFullName,
+                        skinCode,
+                        skinCodeName,
+                        entities
+                    };
+                }
+            }
+            else{
+
+                // 성별로 나눠진 객체 타입일 경우
+                if (hasSexCode(codePoints, objectCodeName)){
+
+                    emojiData[codePoint] = {
+                        codePoints,
+                        objectCode,
+                        objectCodeName,
+                        objectFullName,
+                        skinCode,
+                        skinCodeName,
+                        entities
+                    };
+                }
+            }
+
         });
+
+        lr.on('end', () => {
+
+            fse.removeSync(tmpFilePath);
+
+            if (idx === (fileNames.length - 1)){
+
+                // 파일을 생성한다.
+                fse.writeFileSync(destFilePath, JSON.stringify(emojiData, null, 2));
+
+                console.log('Create emoji data file');
+            }
+        });
+
+
+        lr.on('error', err => {
+            console.log(err);
+        });
+
+    }));
+});
+
+/**
+ *
+ * 객체 코드 이름을 반환한다.
+ *
+ * @param objectCodeName
+ * @returns {string}
+ */
+function getObjectCodeName(objectFullName = ''){
+
+    objectFullName = objectFullName.trim();
+
+    return objectFullName.replace(/(,|^man|man$|^woman|woman$)/g, '');
+}
+
+/**
+ *
+ * 전달받은 코드 포인트 집합에, `성별` 코드가 포함되었는지 유/무를 반환한다.
+ *
+ * @param codePoints
+ * @param objectCodeName
+ * @returns {boolean}
+ */
+function hasSexCode(codePoints = [], objectCodeName = ''){
+
+    let ret = false;
+
+    const length = sexCodes.length;
+
+    for (let i = 0; i < length; i++){
+
+        const v = sexCodes[i];
+
+        // 필터될 객체 타입이 아니면서, 성별 코드 포인트를 포함할 경우
+        if ((objectCodeName.indexOf('couple') === -1 &&
+            objectCodeName !== 'kiss' &&
+            objectCodeName !== 'family') &&
+
+            codePoints.indexOf(v) > -1){
+
+            ret = true;
+            break;
+        }
+    }
+
+    return ret;
+}
+
+/**
+ *
+ * 스킨 코드를 반환한다.
+ *
+ * @param codePoints
+ * @returns {string}
+ */
+function getSkinCode(codePoints = []){
+
+    let ret = '';
+
+    const length = skinCodes.length;
+
+    for (let i = 0; i < length; i++){
+
+        const v = skinCodes[i];
+
+        if (codePoints.indexOf(v) > -1){
+            ret = v;
+            break
+        }
+    }
+
+    return ret;
+}
+
+/**
+ *
+ * 전체 HTML 엔트리를 반환한다.
+ *
+ * @param codePoints
+ * @returns {string}
+ */
+function getEntities(codePoints = []){
+
+    let ret = '';
+
+    codePoints.forEach(v => {
+        ret += `&#x${v};`;
     });
 
-    lr.on('end', () => {
+    return ret;
+}
 
-        // All lines are read, file is closed now.
-        fse.writeFileSync(destFilePath, JSON.stringify(emojiData, null, 2));
-
-        fse.removeSync(tmpFilePath);
-
-        console.log('Create emoji data file');
-    });
-
-
-    lr.on('error', err => {
-        console.log(err);
-    });
-
-}));
 
