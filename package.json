@@ -1,11 +1,12 @@
 {
-  "name": "emoji-join",
+  "name": "emoji-joiner",
   "version": "1.0.0",
-  "description": "emoji-join",
+  "description": "emoji-joiner",
   "keywords": [
     "emoji",
     "character",
-    "create"
+    "create",
+    "joiner"
   ],
   "homepage": "https://github.com/mohwa/emoji-join",
   "author": {
