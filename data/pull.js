@@ -91,7 +91,7 @@ fileNames.forEach((v, idx) => {
                 }
             }
 
-            const objectCodeNameAndSkin = data[2].split('#').split(':');
+            const objectCodeNameAndSkin = data[2].split('#')[0].split(':');
 
             // 객체 코드
             let objectFullName = objectCodeNameAndSkin[0];
@@ -149,7 +149,7 @@ fileNames.forEach((v, idx) => {
                 // 파일을 생성한다.
                 fse.writeFileSync(destFilePath, JSON.stringify(emojiData, null, 2));
 
-                console.log('Create emoji data file');
+                console.log('Create `emoji-data` file.');
             }
         });
 
