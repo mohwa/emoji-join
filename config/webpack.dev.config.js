@@ -16,7 +16,7 @@ const rootPath = path.join(__dirname, '..');
 const srcPath = path.join(rootPath, 'src');
 const buildPath = path.join(rootPath, 'dist');
 
-const entry = path.join(srcPath, 'emoji-join');
+const entry = path.join(srcPath, 'emoji-joiner');
 
 const config = {
     entry: {

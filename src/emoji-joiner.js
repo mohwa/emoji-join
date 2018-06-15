@@ -12,9 +12,9 @@ const skinCodes = [
 ];
 
 /**
- * EmojiJoin 클래스
+ * EmojiJoiner 클래스
  */
-class EmojiJoin{
+class EmojiJoiner{
 
     constructor({
     } = {}){
@@ -130,6 +130,6 @@ class EmojiJoin{
 }
 
 
-module.exports = EmojiJoin;
+module.exports = EmojiJoiner;
 
   

@@ -27,7 +27,7 @@ const config = {
         filename: '[name].js',
         libraryTarget: 'umd',
         path: buildPath,
-        library: 'EmojiJoin'
+        library: 'EmojiJoiner'
     },
     module: {
         rules: [
