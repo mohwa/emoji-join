@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "emoji-join",
   "keywords": [
-    "tournament",
-    "mohwa"
+    "emoji",
+    "character",
+    "create"
   ],
-  "homepage": "https://github.com/mohwa/le.test",
+  "homepage": "https://github.com/mohwa/emoji-join",
   "author": {
     "name": "mohwa",
     "email": "yanione2@gmail.com"
