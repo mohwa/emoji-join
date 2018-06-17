@@ -2,73 +2,117 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="apple-mobile-web-app-title">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-
+	<meta name="apple-mobile-web-app-title" content="Create Emoji Character">
+	<meta name="viewport" content="width=500">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-touch-fullscreen" content="yes">
-	<meta name="description">
+	<meta name="description" content="Create Emoji Character">
+	<meta name="keywords" content="Create Emoji Character">
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 
 	<title>Create Emoji Character</title>
 
 	<style type="text/css">
 
-		label{
-			width: 150px;
-			display: inline-block;
+		.emoji-container{
+
+			position: relative;
+
+			width: 100%;
+			height: 100%;
+
+			min-width: 500px;
+
+			margin: 0 auto;
+
+			border: 1px solid #969595;
+			border-radius: 4px;
+
+			background: #edeae9;
+
+			font-family: "Open Sans", helvetica, arial, sans-serif;
+			color: #838383;
 		}
 
-		.object-type, .object{
+		.emoji-container .title{
 
-			width: 100px;
-			display: inline-block;
+			height: 80px;
+
+			line-height: 80px;
+
+			font-size: 30px;
+
+			padding-left: 10px;
+		}
+
+		.emoji-container .emoji-type-container, .emoji-object-container{
+
+			position: relative;
+
+			border-top: 1px solid #969595;
+
+			padding: 20px;
+		}
+
+		.emoji-type-container label, .emoji-object-container label{
+
+			font-size: 20px;
+
+			display: block;
+		}
+
+		.emoji-type-container select, .emoji-object-container select{
+			margin-top: 10px;
 		}
 
 		.selected-emoji{
 
-			width: 400px;
-			height: 200px;
+			height: 400px;
 
-			line-height: 200px;
+			line-height: 400px;
 
-			font-size: 100px;
+			font-size: 200px;
 
 			text-align: center;
 
-			margin: 0 auto;
+			border-top: 1px solid #969595;
 
-			border: gray 1px solid;
-
+			margin: 10px auto 0 auto;
 		}
 	</style>
 </head>
 <body>
-	<div>
-		<label class="object-type-label">이모지 타입</label><select class="object-type"></select>
-	</div>
-	<div>
-		<label class="object-label">이모지</label><select class="object"></select>
-	</div>
+	<div class="emoji-container">
+		<div class="title">Create Emoji Character</div>
+		<div class="emoji-type-container">
+			<label>Emoji Type</label>
+			<select class="emoji-type"></select>
+		</div>
+		<div class="emoji-object-container">
+			<label>Emoji</label>
+			<select class="emoji-object"></select>
+		</div>
 
-	<div class="selected-emoji"></div>
+		<div class="selected-emoji"></div>
+	</div>
 
 	<script type="text/javascript">
 
-		const objectTypeElem = document.querySelector('.object-type');
-		const objectElem = document.querySelector('.object');
+		const emojiTypeElem = document.querySelector('.emoji-type');
+		const emojiElem = document.querySelector('.emoji-object');
 		const selectedEmoji = document.querySelector('.selected-emoji');
 
-		// 이모지 객체 타입 셀렉트 박스를 생성한다.
-		createObjectTypeOptions();
+		createEmojiTypeOptions();
 
-		// 객체 타입 옵션을 생성한다.
-		function createObjectTypeOptions(){
+		// 이모지 타입 옵션을 생성한다.
+		function createEmojiTypeOptions(){
 
-			removeOptions(objectTypeElem);
+			removeOptions(emojiTypeElem);
 
-			const objectTypes = EmojiJoin.getObjectTypes();
+			const emojiTypes = EmojiJoiner.getObjectTypes();
 
-			objectTypes.forEach(v => {
+			emojiTypes.forEach(v => {
 
 				const objectCode = v.objectCode;
 				const objectCodeName = v.objectCodeName;
@@ -86,29 +130,29 @@
 
 				option.value = objectCode;
 
-				objectTypeElem.add(option);
+				emojiTypeElem.add(option);
 			});
 
-			createObjectOptions(objectTypes[0].objectCode);
+			createEmojiOptions(emojiTypes[0].objectCode);
 
-			objectTypeElem.onchange = e => {
+			emojiTypeElem.onchange = e => {
 
 				const currentTarget = e.currentTarget;
 				const objectCode = currentTarget.value;
 
-				removeOptions(objectElem);
-				createObjectOptions(objectCode);
+				removeOptions(emojiElem);
+				createEmojiOptions(objectCode);
 			};
 		}
 
 		// 객체 옵션을 생성한다.
-		function createObjectOptions(objectCode = ''){
+		function createEmojiOptions(objectCode = ''){
 
-			removeOptions(objectElem);
+			removeOptions(emojiElem);
 
-			const objects = EmojiJoin.getObjects(objectCode);
+			const emojis = EmojiJoiner.getObjects(objectCode);
 
-			objects.forEach(v => {
+			emojis.forEach(v => {
 
 				const objectFullName = v.objectFullName;
 				const entities = v.entities;
@@ -124,12 +168,12 @@
 
 				option.value = entities;
 
-				objectElem.add(option);
+				emojiElem.add(option);
 			});
 
-			selectedEmoji.innerHTML = objects[0].entities;
+			selectedEmoji.innerHTML = emojis[0].entities;
 
-			objectElem.onchange = e => {
+			emojiElem.onchange = e => {
 
 				const currentTarget = e.currentTarget;
 				const entities = currentTarget.value;
@@ -141,12 +185,8 @@
 		// 셀렉트 박스 옵션을 삭제한다.
 		function removeOptions(elem = null, index = null){
 
-			if (index){
-				elem.remove(index);
-			}
-			else{
-				elem.innerHTML = '';
-			}
+			if (index) elem.remove(index);
+			else elem.innerHTML = '';
 		}
 
 

@@ -20,7 +20,7 @@ const entry = path.join(srcPath, 'emoji-joiner');
 
 const config = {
     entry: {
-        "emoji-join": entry
+        "emoji-joiner": entry
     },
     devServer: {
         host: 'localhost',
