@@ -94,7 +94,7 @@ fileNames.forEach((v, idx) => {
             const objectCodeNameAndSkin = data[2].split('#')[0].split(':');
 
             // 객체 코드
-            let objectFullName = objectCodeNameAndSkin[0];
+            let objectFullName = objectCodeNameAndSkin[0].trim();
             let objectCodeName = getObjectCodeName(objectFullName);
 
             // 스킨
@@ -169,8 +169,6 @@ fileNames.forEach((v, idx) => {
  * @returns {string}
  */
 function getObjectCodeName(objectFullName = ''){
-
-    objectFullName = objectFullName.trim();
 
     return objectFullName.replace(/(,|^man|man$|^woman|woman$)/g, '');
 }
